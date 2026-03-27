@@ -1,0 +1,64 @@
+{
+  messages: [
+    {
+      role: 'system',
+      content: 'You are a helpful assistant.',
+    },
+    {
+      role: 'user',
+      content: "What's the weather like in New York?",
+    },
+    {
+      role: 'assistant',
+      content: "<think>\nThe user is asking about the weather in New York. I should use the weather tool to get this information.\n</think>\nI'll check the current weather in New York for you.",
+      tool_calls: [
+        {
+          type: 'function',
+          function: {
+            name: 'get_weather',
+            arguments: '{"location": "New York", "unit": "celsius"}',
+          },
+        },
+      ],
+    },
+    {
+      role: 'tool',
+      content: '{"temperature": 22, "condition": "Sunny", "humidity": 45, "wind_speed": 10}',
+    },
+    {
+      role: 'assistant',
+      content: "The weather in New York is currently sunny with a temperature of 22°C. The humidity is at 45% with a wind speed of 10 km/h. It's a great day to be outside!",
+    },
+    {
+      role: 'user',
+      content: 'Thanks! What about Boston?',
+    },
+  ],
+  tools: [
+    {
+      name: 'get_weather',
+      description: 'Get current weather information for a location',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: {
+            type: 'string',
+            description: 'The city and state, e.g. San Francisco, CA',
+          },
+          unit: {
+            type: 'string',
+            enum: [
+              'celsius',
+              'fahrenheit',
+            ],
+            description: 'The unit of temperature to use',
+          },
+        },
+        required: [
+          'location',
+        ],
+      },
+    },
+  ],
+  add_generation_prompt: true,
+}

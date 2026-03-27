@@ -1,0 +1,50 @@
+Ok so the jinja template for qwen 3.5 is built as follows.
+#section-start top level overview
+At the top level we can have
+    messages - an array of individual messages
+    tools - a list of tools available to the agent
+    add_generation_prompt - boolean determining whether or not to add the generation prompt, Defaults to False
+    enable_thinking - determines whether the model will think before responding. Defaults to True
+#section-end
+#section-start the messages
+Each message is a mapping with some of the following fields.
+    role: #section-start
+        Takes "assistant", "system", "user", or "tool". 
+    #section-end
+    content: #section-start
+        A string which contains the main content of the message If the message has role 'tool' then the output shoud be a string which represents a json mapping containing the returned data. This json output does not need to be related to the input.
+    #section-end
+    tool calls (optional): #section-start
+        This shows up only on assistant chats which make a tool call. They have a "type" field which always seems to be "function" and a "function" field which seems to have a "name" field and a "arguments" field. The arguments field is a mapping which maps each of the user defined parameters for the tool to the parameters given. notably the exampl given has this as a string of a mapping, but the jinja file itself seems to indicate that this should be a mapping.
+    #section-end
+    note on the tool message: #section-start
+        The tool message is given a string of a json as content in the example. I'm just going to assume that we can put any string there.
+    #section-end
+#section-end
+#section-start the tools
+Each tool is a mapping with the following fields:
+    name: #section-start
+        the name of the tool.
+    #section-end
+    description: #section-start
+        the text description of the tool
+    #section-end
+    parameters: #section-start
+        Contians "type" and "properties" and "required" fields
+        type: #section-start
+            is always "object" in every documentation I've read. No idea what it does.
+        #section-end
+        properties: #section-start
+            each a mapping of user defined names of the parameters of the tools to mappings describing the tools
+            mappings describing the tools: #section-start
+                each tool description mapping has a "type" field, which as far as I've seen is always "string" and a "description" field which is a string describing what the property is. In addition it can have an "enum" field which is a list of strings which are acceptable inputs for the property.
+            #section-end
+        #section-end
+        required: #section-start
+            A list of strings listing each of the properties that must be specified.
+        #section-end
+    #section-end
+#section-end
+Further notes: #section-start
+    There appear to be several undocumented portions of the interface, for instance, multi step tool calling. I honestly can't quite say how this is supposed to work. And the model publisher laid off the division that made this, so its not likely that more documentation is coming out ever. For now the understanding laid out in this docuemnt should be sufficient.
+#section-end
