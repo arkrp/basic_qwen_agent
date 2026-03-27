@@ -31,12 +31,37 @@ messages = [
     },
     {
         "role":"user",
-        "content":"Wake up. Its testing time. Report system status immediately."
+        "content":"Hey Gryph. What is the current weather in Sacramento, CA?"
     }
 ]
-tools = []
-prompt_string = template.render(**{"messages":messages, "add_generation_prompt":True, "enable_thinking":False})
-#print(f"{prompt_string=}")
+tools = [
+    {
+      "name": 'get_weather',
+      "description": 'Get current weather information for a location',
+      "parameters": {
+        "type": 'object',
+        "properties": {
+          "location": {
+            "type": 'string',
+            "description": 'The city and state, e.g. San Francisco, CA',
+          },
+          "unit": {
+            "type": 'string',
+            "enum": [
+              'celsius',
+              'fahrenheit',
+            ],
+            "description": 'The unit of temperature to use',
+          },
+        },
+        "required": [
+          'location',
+        ],
+      },
+    },
+  ]
+prompt_string = template.render(**{"messages":messages, "tools":tools, "add_generation_prompt":True, "enable_thinking":False})
+print(f"{prompt_string=}")
 #section-end
 #section-start get response
 response=engine.completions.create(
