@@ -22,17 +22,42 @@ engine = OpenAI(
     api_key=OPENAI_API_KEY
 )
 #section-end
+#section-start make nice abstractions!
+def SystemMessage(content): #section-start
+    return({"role":"system", "content":content})
+#section-end
+def UserMessage(content): #section-start
+    return({"role":"user", "content":content})
+#section-end
+def ToolMessage(content): #section-start
+    return({"role":"tool", "content":content})
+#section-end
+def AssistantMessage(content, tool_calls): #section-start
+    return({"role":"assistant", "content":content, "tool_calls": tool_calls})
+#section-end
+def ToolDescription(name, required_parameters, optional_parameters):
+    raise NotImplementedError()
+def ToolParameter(name, description): #section-start
+    return({name:{"type":"string",
+                  "description":description
+                  }})
+#section-end
+def EnumToolParameter(name: str, description: str, valid_inputs: list[str]): #section-start
+    return({name:{"type":"string",
+                  "enum": valid_inputs,
+                  "description":description
+                  }})
+#section-end
+enum_tool_test_value = EnumToolParameter("unit","The unit of temperature to use",["celsius", "fahrenheit"])
+print(f"{enum_tool_test_value=}")
+#Parameters should be unioned | together
+
+#section-end
 #section-start make prompt string
 template = Template(open("qwen3point5template.jinja").read())
 messages = [
-    {
-        "role":"system",
-        "content": "You are Gryph Four, A helpful AI agent."
-    },
-    {
-        "role":"user",
-        "content":"Hey Gryph. What is the current weather in Sacramento, CA?"
-    }
+    SystemMessage("You are Gryph Four, A helpful AI agent."),
+    UserMessage("Hey Gryph. What is the current weather in Sacramento, CA?")
 ]
 tools = [
     {
@@ -60,8 +85,21 @@ tools = [
       },
     },
   ]
+tools = [
+    {
+      "name": 'get_weather',
+      "description": 'Get current weather information for a location',
+      "parameters": {
+        "type": 'object',
+        "properties": {
+        },
+        "required": [
+        ],
+      },
+    },
+  ]
 prompt_string = template.render(**{"messages":messages, "tools":tools, "add_generation_prompt":True, "enable_thinking":False})
-print(f"{prompt_string=}")
+#print(f"{prompt_string=}")
 #section-end
 #section-start get response
 response=engine.completions.create(
