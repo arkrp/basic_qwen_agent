@@ -35,9 +35,19 @@ def ToolMessage(content): #section-start
 def AssistantMessage(content, tool_calls): #section-start
     return({"role":"assistant", "content":content, "tool_calls": tool_calls})
 #section-end
-def ToolDescription(name, required_parameters, optional_parameters):
-    raise NotImplementedError()
-def ToolParameter(name, description): #section-start
+def ToolDescription(name: str, description: str, required_parameters, optional_parameters):
+    """Takes name description and Tool Parameters to make a tool description for jinja"""
+    required_list = [i for i in required_parameters]
+    return({
+            "name":name,
+            "description": description,
+            "parameters":{
+                "type":"object",
+                "properties":required_parameters|optional_parameters,
+                "required":required_list
+            }
+        })
+def ToolParameter(name: str, description: str): #section-start
     return({name:{"type":"string",
                   "description":description
                   }})
@@ -48,8 +58,6 @@ def EnumToolParameter(name: str, description: str, valid_inputs: list[str]): #se
                   "description":description
                   }})
 #section-end
-enum_tool_test_value = EnumToolParameter("unit","The unit of temperature to use",["celsius", "fahrenheit"])
-print(f"{enum_tool_test_value=}")
 #Parameters should be unioned | together
 
 #section-end
@@ -85,21 +93,16 @@ tools = [
       },
     },
   ]
-tools = [
-    {
-      "name": 'get_weather',
-      "description": 'Get current weather information for a location',
-      "parameters": {
-        "type": 'object',
-        "properties": {
-        },
-        "required": [
-        ],
-      },
-    },
-  ]
+tools2 = [ToolDescription(
+        "get_weather",
+        "Get current weather information for a location",
+        ToolParameter("location", "The city and state, e.g. San Francisco, CA"),
+        EnumToolParameter("unit","The unit of temperature to use",["celsius", "fahrenheit"])
+        )]
 prompt_string = template.render(**{"messages":messages, "tools":tools, "add_generation_prompt":True, "enable_thinking":False})
-#print(f"{prompt_string=}")
+prompt_string2 = template.render(**{"messages":messages, "tools":tools2, "add_generation_prompt":True, "enable_thinking":False})
+print(f"\n{prompt_string=}")
+print(f"\n{prompt_string2=}")
 #section-end
 #section-start get response
 response=engine.completions.create(
