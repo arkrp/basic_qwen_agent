@@ -6,6 +6,7 @@ print("hello world")
 from openai import OpenAI
 from jinja2 import Template
 from os import environ as ENVIRONMENT
+import xml.etree.ElementTree as xml
 #section-end
 #section-start set configuration constants
 OPENAI_API_BASE = ENVIRONMENT["OPENAI_API_BASE"]
@@ -22,6 +23,9 @@ engine = OpenAI(
     api_key=OPENAI_API_KEY
 )
 #section-end
+#section-start load the jinja template
+template = Template(open("qwen3point5template.jinja").read())
+#section-end
 #section-start make nice abstractions!
 def SystemMessage(content): #section-start
     return({"role":"system", "content":content})
@@ -35,7 +39,7 @@ def ToolMessage(content): #section-start
 def AssistantMessage(content, tool_calls): #section-start
     return({"role":"assistant", "content":content, "tool_calls": tool_calls})
 #section-end
-def ToolDescription(name: str, description: str, required_parameters, optional_parameters):
+def ToolDescription(name: str, description: str, required_parameters={}, optional_parameters={}): #section-start
     """Takes name description and Tool Parameters to make a tool description for jinja"""
     required_list = [i for i in required_parameters]
     return({
@@ -47,6 +51,7 @@ def ToolDescription(name: str, description: str, required_parameters, optional_p
                 "required":required_list
             }
         })
+#section-end
 def ToolParameter(name: str, description: str): #section-start
     return({name:{"type":"string",
                   "description":description
@@ -62,47 +67,26 @@ def EnumToolParameter(name: str, description: str, valid_inputs: list[str]): #se
 
 #section-end
 #section-start make prompt string
-template = Template(open("qwen3point5template.jinja").read())
-messages = [
+messages = [ #section-start
     SystemMessage("You are Gryph Four, A helpful AI agent."),
-    UserMessage("Hey Gryph. What is the current weather in Sacramento, CA?")
+    UserMessage("Hey Gryph. Is the weather preferable in Sacramento, CA?")
 ]
-tools = [
-    {
-      "name": 'get_weather',
-      "description": 'Get current weather information for a location',
-      "parameters": {
-        "type": 'object',
-        "properties": {
-          "location": {
-            "type": 'string',
-            "description": 'The city and state, e.g. San Francisco, CA',
-          },
-          "unit": {
-            "type": 'string',
-            "enum": [
-              'celsius',
-              'fahrenheit',
-            ],
-            "description": 'The unit of temperature to use',
-          },
-        },
-        "required": [
-          'location',
-        ],
-      },
-    },
-  ]
-tools2 = [ToolDescription(
+#section-end
+tools = [ #section-start
+    ToolDescription(
         "get_weather",
         "Get current weather information for a location",
         ToolParameter("location", "The city and state, e.g. San Francisco, CA"),
         EnumToolParameter("unit","The unit of temperature to use",["celsius", "fahrenheit"])
-        )]
+    ),
+    ToolDescription(
+        "get_weather_preference",
+        "get the user\'s weather preference",
+    ),
+]
+#section-end
 prompt_string = template.render(**{"messages":messages, "tools":tools, "add_generation_prompt":True, "enable_thinking":False})
-prompt_string2 = template.render(**{"messages":messages, "tools":tools2, "add_generation_prompt":True, "enable_thinking":False})
-print(f"\n{prompt_string=}")
-print(f"\n{prompt_string2=}")
+print("prompt_string: "+ prompt_string)
 #section-end
 #section-start get response
 response=engine.completions.create(
@@ -112,5 +96,8 @@ response=engine.completions.create(
     temperature=0.7
     )
 #section-end
-print(response.choices[0].text)
+print(xml.fromstring(
+'<tool_call>\n<funcssstion="get_weather_preference">\n</function>\n</tool_call>\n<tool_call>\n<function="get_weather">\n<parameter="location">\nSacramento, CA\n</parameter>\n</function>\n</tool_call>'))
+print(repr(response.choices[0].text))
+print(xml.fromstring(response.choices[0].text))
 print("\'till void and starfire")
