@@ -45,6 +45,19 @@ Each tool is a mapping with the following fields:
         #section-end
     #section-end
 #section-end
+#section-start how the model calls tools
+The model calls tools like this:
+
+<tool_call>
+<function=get_weather>
+<parameter=location>
+Sacramento, CA
+</parameter>
+</function>
+</tool_call>
+
+You may notice that this is not valid XML. This necesitates a custom parser. That is all.
+#section-end
 Further notes: #section-start
     There appear to be several undocumented portions of the interface, for instance, multi step tool calling. I honestly can't quite say how this is supposed to work. And the model publisher laid off the division that made this, so its not likely that more documentation is coming out ever. For now the understanding laid out in this docuemnt should be sufficient.
 #section-end
