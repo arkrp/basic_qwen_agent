@@ -99,7 +99,6 @@ engine = OpenAI(
     api_key=OPENAI_API_KEY
 )
 #section-end
-#section-start make prompt string
 messages = [ #section-start
     SystemMessage("You are Gryph Four, A helpful AI agent.")]
 #section-end
@@ -111,7 +110,7 @@ def get_weather(*, location, unit="celsius"): #section-start
         return("It is 70 degrees fahrenheit in " + location)
 #section-end
 def get_weather_preference(): #section-start
-    return("The user prefers temperatures above 30 degrees celsius")
+    return("The user prefers temperatures above 35 degrees celsius")
 #section-end
 tools = { #section-start
     "get_weather":get_weather,
@@ -132,60 +131,66 @@ tool_descriptions = [ #section-start
 ]
 #section-end
 #section-end
+#section-start have a conversation!
+#section-start give the user the first statement
 speaker="user"
+#section-end
+#section-start take turns for the rest!
 while(True):
+    #section-start let the speaker speak
+    #section-start deal with speaker being the user
     if speaker=="user":
-        messages.append(UserMessage(input("User: ")))
+        user_input = input("User: ")
+        if((user_input == "exit") or (user_input == "q") or (user_input == "quit")):
+            break
+        messages.append(UserMessage(user_input))
         speaker="assistant"
-    elif speaker="assistant":
-
-
-    
-    #section-start compile prompt
-    prompt_string = template.render(**{"messages":messages, "tools":tool_descriptions, "add_generation_prompt":True, "enable_thinking":False})
     #section-end
-    #section-start generate with llm
-    response=engine.completions.create(
-        model=PREFFERED_MODEL,
-        prompt=prompt_string,
-        max_tokens=4096,
-        temperature=0.7
-        ).choices[0].text
+    #section-start deal with the speaker being the assitant
+    elif speaker=="assistant":
+        #section-start compile prompt
+        prompt_string = template.render(**{"messages":messages, "tools":tool_descriptions, "add_generation_prompt":True, "enable_thinking":False})
+        #section-end
+        #section-start generate response
+        response=engine.completions.create(
+            model=PREFFERED_MODEL,
+            prompt=prompt_string,
+            max_tokens=4096,
+            temperature=0.7
+            ).choices[0].text
+        #section-end
+        #section-start parse the response!
+        messages.append(ParseResponse(response))
+        #section-end
+        if messages[-1]["content"] != "":
+            print("Assistant: " + messages[-1]["content"])
+        else:
+            print("Assitant called a tool or tools")
+        #section-start pass the turn to tool or user!
+        if "tool_calls" in messages[-1]:
+            speaker="tool"
+        else:
+            speaker="user"
+        #section-end
     #section-end
-    print(response)
-    messages.append(ParseResponse(response))
-    if "tool_calls" in messages[-1]:
+    #section-start deal with the speaker being a tool
+    elif speaker=="tool":
         for tool_call in messages[-1]["tool_calls"]:
             tool_name = tool_call["function"]["name"]
-            print("tool_name: "+tool_name)
+            #print("tool_name: "+tool_name)
             tool_args = tool_call["function"]["arguments"]
-            print("function_args: "+repr(tool_args))
-            print("tool_call_result: "+tools[tool_name](**tool_args))
-    
-#print("prompt_string: "+ prompt_string)
+            #print("function_args: "+repr(tool_args))
+            #print("tool_call_result: "+tools[tool_name](**tool_args))
+            tool_response = ToolMessage(tools[tool_name](**tool_args))
+            messages.append(tool_response)
+            print("Tool("+ tool_name +"): "+ tool_response["content"])
+        speaker = "assistant"
+    #section-end
+    #section-start deal with invalid speaker value!
+    else:
+        raise ValueError("Unrecognize speaker value: " +speaker)
+    #section-end
+    #section-end
 #section-end
-#section-start test parser
-example_parse_message_tools = """message that is before the tool calls<tool_call>
-<function=get_weather_preference>
-</function>
-</tool_call>
-<tool_call>
-<function=get_weather>
-<parameter=location>
-Sacramento, CA
-</parameter>
-<parameter=unit>
-Celsius
-</parameter>
-<parameter=unit>
-kelvin
-</parameter>
-</function>
-</tool_call>
-"""
-example_parse_message = "message that is before the tool calls"
-print(ParseResponse(example_parse_message))
-print(ParseResponse(example_parse_message_tools))
 #section-end
-#print(repr(response.choices[0].text))
-#print("\'till void and starfire")
+print("\'till void and starfire")
