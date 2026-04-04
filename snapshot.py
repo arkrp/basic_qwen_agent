@@ -4,11 +4,14 @@ import filecmp
 import os
 import shutil
 import subprocess
+import importlib.util
+import sys
 #section-end
 #section-start define constants
 REFERENCE_FILE_SUFFIX = ".reference.txt"
 CURRENT_FILE_SUFFIX = ".current.txt"
 TEST_FILE_DIRECTORY = "./snapshot_tests/"
+TEST_MODULE_FILEPATH = TEST_FILE_DIRECTORY + "/snapshot_tests.py"
 #section-end
 def snapshot_test(*, computed_value, test_name): #section-start
     """ #section-start
@@ -60,12 +63,25 @@ def main(): #section-start
     parser.add_argument("-r", "--rereference", type=str, help="overwrite the reference output with the current output. this takes the test name. use this after performing an examination and finding that the current output is correct.")
     args = parser.parse_args()
     #section-end
-    #section-start check if test directory exists
+    #section-start ensure the test directory exists.
     if not os.path.isdir(TEST_FILE_DIRECTORY):
-        print("test directory not found, creating test directory")
+        #section-start create the directory
+        print("no test directory not found. performing fist time setup!")
+        print("creating test directory")
         os.mkdir(TEST_FILE_DIRECTORY)
+        #section-end
+        #section-start make the gitignore file
+        print("creating test directory gitignore file")
         with open(TEST_FILE_DIRECTORY+".gitignore", "w") as gitignore:
-            gitignore.write("*"+REFERENCE_FILE_SUFFIX)
+            gitignore.write("*"+REFERENCE_FILE_SUFFIX+"\n__pycache")
+        #section-end
+    #section-end
+    #section-start load the tests
+    spec = importlib.util.spec_from_file_location("snapshot_tests", TEST_MODULE_FILEPATH)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["snapshot_tests"] = module
+    spec.loader.exec_module(module)
+    tests = module.tests
     #section-end
     #section-start always run the tests
     for test_name in tests:
