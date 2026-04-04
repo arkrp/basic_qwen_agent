@@ -1,14 +1,19 @@
+#section-start import stuff!
+import qwen_interface
+from jinja2 import Template
+#section-end
+#section-start load template
+template = Template(open("qwen3point5template.jinja").read())
+#section-end
 #section-start define tests
-def tested_function1(): #section-start
-    return("asdfasdf")
-#section-end
-def tested_function2(): #section-start
-    return("asdfg")
-#section-end
+def standard_prompt_test():
+    return("hello!") #TODO make this actually return a rendered prompt
 #section-start enumerate tests
 tests = {
-    "test1":tested_function1,
-    "test2":tested_function2,
+    "standard_prompt_test":standard_prompt_test,
+#    "nothink_test":nothink_test,
+#    "force_tool_test":force_tool_test,
+#    "force_specific_tool_test":force_specific_tool_test,
 }
 #section-end
 #section-end

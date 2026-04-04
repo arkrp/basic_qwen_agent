@@ -32,18 +32,18 @@ def snapshot_test(*, computed_value, test_name): #section-start
     #section-end
     #section-start deal with no previous snapshots existing
     if not os.path.isfile(reference_filename):
-        print("FAIL[x]: "+test_name+"\nprevious test record not found. you need to make a reference test to compare against! to do this; run `snapshot -i "+test_name+"` to examine the current output. If you find the results satisfactory then use `snapshot -r "+test_name+"` to set the current output as the reference output for this test.")
+        print("  FAIL[x]: "+test_name+"\nprevious test record not found. you need to make a reference test to compare against! to do this; run `snapshot -i "+test_name+"` to examine the current output. If you find the results satisfactory then use `snapshot -r "+test_name+"` to set the current output as the reference output for this test.")
         return(False)
     #section-end
     #section-start compare the reference to the current!
     #section-start if they match pass the test!
     if filecmp.cmp(reference_filename, current_filename):
-        print("PASS[ ]: "+test_name)
+        print("  PASS[ ]: "+test_name)
         return(True)
     #section-end
     #section-start if they don't fail the test!
     else:
-        print("FAIL[x]: "+test_name)
+        print("  FAIL[x]: "+test_name)
         return(False)
     #section-end
     #section-end
@@ -84,35 +84,41 @@ def main(): #section-start
     tests = module.tests
     #section-end
     #section-start always run the tests
+    print("\ntests:")
     for test_name in tests:
         snapshot_test(
             test_name=test_name,
             computed_value=tests[test_name](),
         )
+    print()
     #section-end
     #section-start deal with inspection
     if args.inspect is not None:
-        print("inspecting "+ args.inspect)
+        print("inspecting: "+ args.inspect)
         #section-start construct filenames!
         reference_filename = TEST_FILE_DIRECTORY + args.inspect + REFERENCE_FILE_SUFFIX
         current_filename = TEST_FILE_DIRECTORY + args.inspect + CURRENT_FILE_SUFFIX
         #section-end
         #section-start deal with no reference existing
         if not os.path.isfile(reference_filename):
-            print("no reference exists so only the current output will be displayed")
+            print("  no reference exists so only the current output will be displayed")
             display_file(current_filename)
         #section-end
+        #section-start deal with passed test
         elif filecmp.cmp(reference_filename, current_filename):
-            print("the test is passed so only the reference will be displayed")
+            print("  the test is passed so only the reference will be displayed")
             display_file(reference_filename)
+        #section-end
+        #section-start deal with failed test
         else:
-            print("the test failed so both the reference output and the current output will be opened")
+            print("  the test failed so both the reference output and the current output will be opened")
             display_diff(reference_filename, current_filename)
-        print("done inspecting "+ args.inspect)
+        #section-end
+        print("  done\n")
     #section-end
     #section-start deal with rereference
     elif args.rereference is not None:
-        print("rereferencing "+ args.rereference)
+        print("rereferencing: "+ args.rereference)
         #section-start construct filenames!
         reference_filename = TEST_FILE_DIRECTORY + args.rereference + REFERENCE_FILE_SUFFIX
         current_filename = TEST_FILE_DIRECTORY + args.rereference + CURRENT_FILE_SUFFIX
@@ -120,7 +126,7 @@ def main(): #section-start
         #section-start copy the file over!
         shutil.copy(current_filename, reference_filename)
         #section-end
-        print("done rereferencing "+ args.rereference)
+        print("  done\n")
     #section-end
 #section-end
 if __name__=="__main__": #section-start

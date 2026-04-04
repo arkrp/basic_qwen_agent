@@ -1,0 +1,13 @@
+the snapshot tool would totally be better if it has a command interface instead of the argument stuff. To like select between tests and have a decent autocompleteion in itself. It would be a better framework.
+
+So I think it needs
+
+alltest
+specifictest <test>
+inspect <test>
+rereference <test>
+quit
+
+This will be a more cohesive application than the command line args would allow. I do want to keep some sort of command line funcitonality specifically for determining if all tests pass, but that is another feature.
+
+I'm not sure if I should feel bad about getting sidetracked or good about making a relatively useful tool. I think I'm gonna feel good. A little whimsy to balance out the terror. <3
