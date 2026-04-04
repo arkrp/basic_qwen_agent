@@ -1,6 +1,13 @@
+#section-start setup
 #section-start imports
 import re as re
+from jinja2 import Template
 #section-end
+#section-start load the jinja template
+template = Template(open("qwen3point5template.jinja").read())
+#section-end
+#section-end
+#section-start messages
 def SystemMessage(content): #section-start
     """Makes a System Message for a conversation"""
     return({"role":"system", "content":content})
@@ -17,6 +24,8 @@ def AssistantMessage(content): #section-start
     """Makes an Assistant Message for a conversation"""
     return({"role":"assistant", "content":content})
 #section-end
+#section-end
+#section-start tool builders
 def ToolDescription(name: str, description: str, required_parameters={}, optional_parameters={}): #section-start
     """Takes name description and Tool Parameters to make a tool description for jinja"""
     required_list = [i for i in required_parameters]
@@ -43,7 +52,9 @@ def EnumToolParameter(name: str, description: str, valid_inputs: list[str]): #se
                   "description":description
                   }})
 #section-end
-def ParseResponse(response): #section-start
+#section-end
+NoThinkOption = {"add_generation_prompt":True, "enable_thinking":False}
+def parse_response(response): #section-start
     """ #section-start
     Parses the response the language model gives into a AssitantMessage with the relevant tool calls
     """
@@ -76,3 +87,7 @@ def ParseResponse(response): #section-start
         return({"role":"assistant", "content":response})
     #section-end
 #section-end
+def compile_prompt(*, messages, options=NoThinkOption, tool_descriptions=None):
+        prompt_string = template.render(**({"messages":messages, "tools":tool_descriptions} | options))
+        return(prompt_string)
+    

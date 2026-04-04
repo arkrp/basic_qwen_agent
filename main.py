@@ -4,9 +4,8 @@ print("hello world")
 #section-end
 #section-start import stuff
 from openai import OpenAI
-from jinja2 import Template
 from os import environ as ENVIRONMENT
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, ParseResponse
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, parse_response, compile_prompt
 #section-end
 #section-start set configuration constants
 OPENAI_API_BASE = ENVIRONMENT["OPENAI_API_BASE"]
@@ -15,9 +14,6 @@ PREFFERED_MODEL = "model.gguf"
 #section-end
 #section-start print preload complete
 print("preload complete")
-#section-end
-#section-start load the jinja template
-template = Template(open("qwen3point5template.jinja").read())
 #section-end
 #section-end
 #section-start connect to completion engine
@@ -76,7 +72,7 @@ while(True):
     #section-start deal with the speaker being the assitant
     elif speaker=="assistant":
         #section-start compile prompt
-        prompt_string = template.render(**{"messages":messages, "tools":tool_descriptions, "add_generation_prompt":True, "enable_thinking":False})
+        prompt_string = compile_prompt(messages=messages, tool_descriptions=tool_descriptions)
         #section-end
         #section-start generate response
         response=engine.completions.create(
@@ -87,7 +83,7 @@ while(True):
             ).choices[0].text
         #section-end
         #section-start parse the response!
-        messages.append(ParseResponse(response))
+        messages.append(parse_response(response))
         #section-end
         if messages[-1]["content"] != "":
             print("Assistant: " + messages[-1]["content"])
