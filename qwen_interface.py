@@ -123,5 +123,6 @@ def continue_conversation(*, messages, option=NoThinkOption, tool_descriptions=N
         tool_descriptions=tool_descriptions)
     completion = raw_completion_function(compiled_prompt)
     prefix = get_option_prefix(option)
-    return(prefix+completion)
+    new_message = parse_response(prefix+completion)
+    return(messages+[new_message])
 #section-end

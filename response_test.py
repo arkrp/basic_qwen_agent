@@ -45,9 +45,9 @@ tool_descriptions = [ #section-start
     ),
 ]
 #section-end
-response = continue_conversation(
+messages = continue_conversation(
     messages=messages,
     tool_descriptions=tool_descriptions,
     option=ForceMessageStartOption("You've got a lot of guts coming back here"),
     raw_completion_function=raw_completion_function)
-print(response)
+print(messages)

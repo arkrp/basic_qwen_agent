@@ -5,7 +5,7 @@ print("hello world")
 #section-start import stuff
 from openai import OpenAI
 from os import environ as ENVIRONMENT
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, parse_response, compile_prompt
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, continue_conversation, NoThinkOption
 #section-end
 #section-start set configuration constants
 OPENAI_API_BASE = ENVIRONMENT["OPENAI_API_BASE"]
@@ -16,11 +16,23 @@ PREFFERED_MODEL = "model.gguf"
 print("preload complete")
 #section-end
 #section-end
-#section-start connect to completion engine
+#section-start get the completions up and running
+#section-start make the connection
 engine = OpenAI(
     base_url=OPENAI_API_BASE,
     api_key=OPENAI_API_KEY
 )
+#section-end
+#section-start wrap the connection
+def raw_completion_function(prompt_string): #section-start
+    return(engine.completions.create(
+        model=PREFFERED_MODEL,
+        prompt=prompt_string,
+        max_tokens=4096,
+        temperature=0.7
+        ).choices[0].text)
+#section-end
+#section-end
 #section-end
 messages = [ #section-start
     SystemMessage("You are Gryph Four, A helpful AI agent.")]
@@ -71,20 +83,11 @@ while(True):
     #section-end
     #section-start deal with the speaker being the assitant
     elif speaker=="assistant":
-        #section-start compile prompt
-        prompt_string = compile_prompt(messages=messages, tool_descriptions=tool_descriptions)
-        #section-end
-        #section-start generate response
-        response=engine.completions.create(
-            model=PREFFERED_MODEL,
-            prompt=prompt_string,
-            max_tokens=4096,
-            temperature=0.7
-            ).choices[0].text
-        #section-end
-        #section-start parse the response!
-        messages.append(parse_response(response))
-        #section-end
+        messages = continue_conversation(
+            messages=messages,
+            tool_descriptions=tool_descriptions,
+            option=NoThinkOption(),
+            raw_completion_function=raw_completion_function)
         if messages[-1]["content"] != "":
             print("Assistant: " + messages[-1]["content"])
         else:
