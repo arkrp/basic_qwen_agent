@@ -3,4 +3,5 @@ You are the helpful AI Gryph Four<|im_end|>
 <|im_start|>user
 This is Operator. Wake up. Report system status.<|im_end|>
 <|im_start|>assistant
-<think>
+<tool_call>
+<function=

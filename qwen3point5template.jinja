@@ -145,11 +145,22 @@
         {{- raise_exception('Unexpected message role.') }}
     {%- endif %}
 {%- endfor %}
-{%- if add_generation_prompt %}
+{%- if add_generation_prompt is true %}
     {{- '<|im_start|>assistant\n' }}
-    {%- if enable_thinking is defined and enable_thinking is false %}
-        {{- '<think>\n\n</think>\n\n' }}
+    {%- if forced_response_start %}
+        {{- forced_response_start -}}
+    {%- elif force_tool %}
+        {%- if force_tool is true %}
+            {{- '<tool_call>\n<function=' }}
+        {%- else %}
+            {{- '<tool_call>\n<function=' + force_tool }}
+        {%- endif %}
+    {%- elif clean_slate is true %}
     {%- else %}
-        {{- '<think>\n' }}
+        {%- if enable_thinking is true %}
+            {{- '<think>\n' }}
+        {%- else %}
+            {{- '<think>\n\n</think>\n\n' }}
+        {%- endif %}
     {%- endif %}
 {%- endif %}
