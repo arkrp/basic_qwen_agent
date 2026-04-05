@@ -61,19 +61,6 @@ def Tool(*, name: str, description: str, function, required_parameters=[], optio
         }
     })
 #section-end
-def ToolDescription(name: str, description: str, required_parameters={}, optional_parameters={}): #section-start
-    """Takes name description and Tool Parameters to make a tool description for jinja"""
-    required_list = [i for i in required_parameters]
-    return({
-            "name":name,
-            "description": description,
-            "parameters":{
-                "type":"object",
-                "properties":required_parameters|optional_parameters,
-                "required":required_list
-            }
-        })
-#section-end
 def ToolParameter(name: str, description: str): #section-start
     """defines a paramter of a tool used in ToolDescription"""
     return({name:{"type":"string",

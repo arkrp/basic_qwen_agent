@@ -5,7 +5,7 @@ print("hello world")
 #section-start import stuff
 from openai import OpenAI
 from os import environ as ENVIRONMENT
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, continue_conversation, NoThinkOption, Tool, get_function_from_tool_list
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolParameter, EnumToolParameter, continue_conversation, NoThinkOption, Tool, get_function_from_tool_list
 #section-end
 #section-start set configuration constants
 OPENAI_API_BASE = ENVIRONMENT["OPENAI_API_BASE"]

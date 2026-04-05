@@ -6,7 +6,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 import qwen_interface
 from jinja2 import Template
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, parse_response, compile_prompt, get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolParameter, EnumToolParameter, parse_response, compile_prompt, get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption
 #section-end
 #section-start load template
 template = Template(open("qwen3point5template.jinja").read())
