@@ -6,7 +6,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
 import qwen_interface
 from jinja2 import Template
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolParameter, EnumToolParameter, parse_response, compile_prompt, get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, Tool, ToolMessage, ToolParameter, EnumToolParameter, parse_response, compile_prompt, get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption, get_tool_list_description
 #section-end
 #section-start load template
 template = Template(open("qwen3point5template.jinja").read())
@@ -84,10 +84,43 @@ def forced_message_test(): #section-start
         )
     )
 #section-end
-def force_tool_prefix_isolation_test():
+def force_tool_prefix_isolation_test(): #section-start
     return(get_option_prefix(ForceToolOption("get_weather")))
-def nothink_prefix_isolation_test():
+#section-end
+def nothink_prefix_isolation_test(): #section-start
     return(get_option_prefix(NoThinkOption()))
+#section-end
+def tool_inclusion_test(): #section-start
+    tools = [ #section-start
+        Tool(
+            name="get_weather",
+            description="Get current weather information for a location",
+            function=print,
+            required_parameters=[
+                ToolParameter("location", "The city and state, e.g. San Francisco, CA")
+            ],
+            optional_parameters=[
+                EnumToolParameter("unit", "The unit of temperature to use", ["celsius", "fahrenheit"])
+            ]
+        ),
+        Tool(
+            name="get_weather_preference",
+            description="get the user\'s weather preference",
+            function=print
+        )
+    ]
+    #section-end
+    return(
+        compile_prompt(
+            messages = [
+                SystemMessage("You are the helpful AI Gryph Four"),
+                UserMessage("This is Operator. Wake up. Report system status.")
+                    ],
+            tool_descriptions=get_tool_list_description(tools),
+            option=CleanSlateOption()
+        )
+    )
+#section-end
 #section-start enumerate tests
 tests = {
     "standard_prompt_test":standard_prompt_test,
@@ -97,7 +130,8 @@ tests = {
     "clean_slate_test":clean_slate_test,
     "forced_message_test":forced_message_test,
     "force_tool_prefix_isolation_test":force_tool_prefix_isolation_test,
-    "nothink_prefix_isolation_test":nothink_prefix_isolation_test
+    "nothink_prefix_isolation_test":nothink_prefix_isolation_test,
+    "tool_inclusion_test":tool_inclusion_test,
 }
 #section-end
 #section-end
