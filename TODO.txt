@@ -1,17 +1,11 @@
-the snapshot tool would totally be better if it has a command interface instead of the argument stuff. To like select between tests and have a decent autocompleteion in itself. It would be a better framework.
+Ok. I've finally got this to a working state where I have an nice easy wrapper around the qwen 3.5 LLM for conversations.
 
-So I think it needs
+The next step is to turn this conversation completer into an actual agent.
 
-alltest
-specifictest <test>
-inspect <test>
-rereference <test>
-quit
+I think I'm going to start with an anchor based text extractor. The objective is to make an agent which uses a tool to extract a passage from text according to a natural language description. 
 
-This will be a more cohesive application than the command line args would allow. I do want to keep some sort of command line funcitonality specifically for determining if all tests pass, but that is another feature.
+After this. I will try to make a stronger text editing agent.
 
-I'm not sure if I should feel bad about getting sidetracked or good about making a relatively useful tool. I think I'm gonna feel good. A little whimsy to balance out the terror. <3
+After that, maybe a code editing agent.
 
-Its become clear that this repo now contains 3 projects instead of one. A snapshot tester, a qwen interface, and an agent using it.
-
-Ok so the snapshot tool has been moved to a different repo. I got the jinja template formating working. But I do have an issue. The completion api only returns what it generates. This means that should account for this when adding to the messages. After all. if a force_tool results in the tool call being cutoff thats an issue. I think I am going to do this by internalizing the chat continuation to the interface and take the difference between some base jinja generated and the generated prompt. This should give me just the end bit which I can shove back into the message processor. This does require me to create a jinja to generate just the opening line.. I can figure it out.
+But anyways, thats enough of that for one day. I finished the framework today. I'll do the agent if I feel like it later. I want rest now.
