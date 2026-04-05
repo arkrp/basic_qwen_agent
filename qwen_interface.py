@@ -26,6 +26,41 @@ def AssistantMessage(content): #section-start
 #section-end
 #section-end
 #section-start tool builders
+def merge_list_of_dicts(list_of_dicts): #section-start
+    return_value = {}
+    for my_dict in list_of_dicts:
+        return_value = return_value | my_dict
+    return(return_value)
+#section-end
+def get_function_from_tool_list(*, tool_name, tool_list): #section-start
+    for tool in tool_list:
+        if tool["tool_info"]["name"]==tool_name:
+            return(tool["function"])
+    raise ValueError("Attempted to call a tool from a tool list which did not contain it.")
+#section-end
+def get_tool_list_description(tool_list): #section-start
+    return(
+        [i["tool_info"] for i in tool_list]
+    )
+#section-end
+def Tool(*, name: str, description: str, function, required_parameters=[], optional_parameters=[]): #section-start
+    """Takes name description and Tool Parameters to make a tool description for jinja"""
+    required_parameters = merge_list_of_dicts(required_parameters)
+    optional_parameters = merge_list_of_dicts(optional_parameters)
+    required_list = [i for i in required_parameters]
+    return({
+        "function":function,
+        "tool_info":{
+            "name":name,
+            "description": description,
+            "parameters":{
+                "type":"object",
+                "properties":required_parameters|optional_parameters,
+                "required":required_list
+            }
+        }
+    })
+#section-end
 def ToolDescription(name: str, description: str, required_parameters={}, optional_parameters={}): #section-start
     """Takes name description and Tool Parameters to make a tool description for jinja"""
     required_list = [i for i in required_parameters]
@@ -116,11 +151,11 @@ def get_option_prefix(option): #section-start
     prefix = prefix_untrimmed_formatting[len(prefix_trimmed_formatting):None]
     return(prefix)
 #section-end
-def continue_conversation(*, messages, option=NoThinkOption, tool_descriptions=None, raw_completion_function): #section-start
+def continue_conversation(*, messages, option=NoThinkOption, tools=None, raw_completion_function): #section-start
     compiled_prompt = compile_prompt(
         messages=messages,
         option=option,
-        tool_descriptions=tool_descriptions)
+        tool_descriptions=get_tool_list_description(tools))
     completion = raw_completion_function(compiled_prompt)
     prefix = get_option_prefix(option)
     new_message = parse_response(prefix+completion)

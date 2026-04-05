@@ -5,7 +5,7 @@ print("hello world")
 #section-start import stuff
 from openai import OpenAI
 from os import environ as ENVIRONMENT
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, continue_conversation, NoThinkOption
+from qwen_interface import SystemMessage, UserMessage, AssistantMessage, ToolMessage, ToolDescription, ToolParameter, EnumToolParameter, continue_conversation, NoThinkOption, Tool, get_function_from_tool_list
 #section-end
 #section-start set configuration constants
 OPENAI_API_BASE = ENVIRONMENT["OPENAI_API_BASE"]
@@ -47,22 +47,23 @@ def get_weather(*, location, unit="celsius"): #section-start
 def get_weather_preference(): #section-start
     return("The user prefers temperatures above 35 degrees celsius")
 #section-end
-tools = { #section-start
-    "get_weather":get_weather,
-    "get_weather_preference":get_weather_preference
-}
-#section-end
-tool_descriptions = [ #section-start
-    ToolDescription(
-        "get_weather",
-        "Get current weather information for a location",
-        ToolParameter("location", "The city and state, e.g. San Francisco, CA"),
-        EnumToolParameter("unit","The unit of temperature to use",["celsius", "fahrenheit"])
+tools = [ #section-start
+    Tool(
+        name="get_weather",
+        description="Get current weather information for a location",
+        function=get_weather,
+        required_parameters=[
+            ToolParameter("location", "The city and state, e.g. San Francisco, CA")
+        ],
+        optional_parameters=[
+            EnumToolParameter("unit", "The unit of temperature to use", ["celsius", "fahrenheit"])
+        ]
     ),
-    ToolDescription(
-        "get_weather_preference",
-        "get the user\'s weather preference",
-    ),
+    Tool(
+        name="get_weather_preference",
+        description="get the user\'s weather preference",
+        function=get_weather_preference
+    )
 ]
 #section-end
 #section-end
@@ -85,10 +86,10 @@ while(True):
     elif speaker=="assistant":
         messages = continue_conversation(
             messages=messages,
-            tool_descriptions=tool_descriptions,
+            tools=tools,
             option=NoThinkOption(),
             raw_completion_function=raw_completion_function)
-        if messages[-1]["content"] != "":
+        if "tool_calls" in messages[-1]:
             print("Assistant: " + messages[-1]["content"])
         else:
             print("Assitant(tool call):" + messages[-1]["content"])
@@ -103,11 +104,12 @@ while(True):
     elif speaker=="tool":
         for tool_call in messages[-1]["tool_calls"]:
             tool_name = tool_call["function"]["name"]
-            #print("tool_name: "+tool_name)
             tool_args = tool_call["function"]["arguments"]
-            #print("function_args: "+repr(tool_args))
-            #print("tool_call_result: "+tools[tool_name](**tool_args))
-            tool_response = ToolMessage(tools[tool_name](**tool_args))
+            tool_function = get_function_from_tool_list(
+                tool_name=tool_name,
+                tool_list=tools
+            )
+            tool_response = ToolMessage(tool_function(**tool_args))
             messages.append(tool_response)
             print("Tool("+ tool_name +"): "+ tool_response["content"])
         speaker = "assistant"
