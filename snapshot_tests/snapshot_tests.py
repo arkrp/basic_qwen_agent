@@ -4,17 +4,12 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir)
-import qwen_interface
-from jinja2 import Template
-from qwen_interface import SystemMessage, UserMessage, AssistantMessage, Tool, ToolMessage, ToolParameter, EnumToolParameter, parse_response, compile_prompt, get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption, get_tool_list_description
-#section-end
-#section-start load template
-template = Template(open("qwen3point5template.jinja").read())
+from qwen_interface.qwen_interface import SystemMessage, UserMessage, AssistantMessage, Tool, ToolMessage, ToolParameter, EnumToolParameter, _compile_prompt, _get_option_prefix, NoThinkOption, StandardOption, ForceToolOption, CleanSlateOption, ForceMessageStartOption, _get_tool_list_description
 #section-end
 #section-start define tests
 def standard_prompt_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -26,7 +21,7 @@ def standard_prompt_test(): #section-start
 #section-end
 def nothink_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -38,7 +33,7 @@ def nothink_test(): #section-start
 #section-end
 def force_tool_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -50,7 +45,7 @@ def force_tool_test(): #section-start
 #section-end
 def force_specific_tool_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -62,7 +57,7 @@ def force_specific_tool_test(): #section-start
 #section-end
 def clean_slate_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -74,7 +69,7 @@ def clean_slate_test(): #section-start
 #section-end
 def forced_message_test(): #section-start
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
@@ -85,10 +80,10 @@ def forced_message_test(): #section-start
     )
 #section-end
 def force_tool_prefix_isolation_test(): #section-start
-    return(get_option_prefix(ForceToolOption("get_weather")))
+    return(_get_option_prefix(ForceToolOption("get_weather")))
 #section-end
 def nothink_prefix_isolation_test(): #section-start
-    return(get_option_prefix(NoThinkOption()))
+    return(_get_option_prefix(NoThinkOption()))
 #section-end
 def tool_inclusion_test(): #section-start
     tools = [ #section-start
@@ -111,12 +106,12 @@ def tool_inclusion_test(): #section-start
     ]
     #section-end
     return(
-        compile_prompt(
+        _compile_prompt(
             messages = [
                 SystemMessage("You are the helpful AI Gryph Four"),
                 UserMessage("This is Operator. Wake up. Report system status.")
                     ],
-            tool_descriptions=get_tool_list_description(tools),
+            tool_descriptions=_get_tool_list_description(tools),
             option=CleanSlateOption()
         )
     )
